@@ -1,0 +1,4 @@
+include Makefile
+
+install: parallel_n64_libretro.so
+	install -Dp -m755 parallel_n64_libretro.so $(DESTDIR)$(prefix)/lib/libretro/parallel_n64_libretro.so

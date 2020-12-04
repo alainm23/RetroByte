@@ -1,0 +1,18 @@
+[Libretro]
+Type=Emulator
+Version=1.0
+Name=ParaLLEl N64
+Module=parallel_n64_libretro.so
+LibretroVersion=1
+Authors=Hacktarux;Mupen64Plus Team;TinyTiger;Libretro;
+License=GPL-2.0;
+
+[Platform:Nintendo64]
+MimeType=application/x-n64-rom;
+Firmwares=Nintendo64DD;
+
+[Firmware:Nintendo64DD]
+Path=64DD_IPL.bin
+MD5=8d3d9f294b6e174bc7b1d2fd1c727530
+SHA-512=7339971e4525e09f6b7075aeef8fc7c13ef57fd894eadfea4893aade7a8e2b5d64a48ee289f0020db70da42820619270d664214d02a3214a093bfdb8267d3286
+Mandatory=false

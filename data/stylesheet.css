@@ -1,0 +1,109 @@
+.titlebar {
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.header-button {
+    background-color: @base_color;
+}
+
+.sidebar-header {
+    background-color: shade (@bg_color, 0.92);
+    color: mix (@bg_color, @text_color, 0.77);
+}
+
+entry {
+    border-radius: 4px;
+}
+
+paned.vertical > separator {
+    background-image:
+        linear-gradient(
+            @menu_separator -2px,
+            @menu_separator_shadow 1px,
+            @menu_separator_shadow 2px,
+            transparent 2px
+        );
+    margin-bottom: 0px;
+    min-height: 1px;
+}
+
+paned.horizontal > separator {
+    background-image:
+        linear-gradient(
+            to right,
+            @menu_separator 1px,
+            @menu_separator_shadow 1px,
+            @menu_separator_shadow 2px,
+            transparent 2px
+        );
+    margin-right: 0px;
+    min-width: 1px;
+}
+
+/* Animations */
+
+@keyframes fancy-turn {
+    0%   { -gtk-icon-transform: rotate(0deg);   }
+    25%  { -gtk-icon-transform: rotate(-30deg); }
+    50%  { -gtk-icon-transform: rotate(0deg);   }
+    75%  { -gtk-icon-transform: rotate(30deg);  }
+    100% { -gtk-icon-transform: rotate(0deg);   }
+}
+
+.recently-icon {
+    background-color:#3689e6;
+    color: #fff;
+    border-radius: 3px;
+    padding: 2px;
+}
+
+.favorite-icon {
+    background-color:#f9c440;
+    color: #000;
+    border-radius: 3px;
+    padding: 2px;
+}
+
+.states-icon {
+    background-color:#c6262e;
+    color: #fff;
+    border-radius: 3px;
+    padding: 2px;
+}
+
+.pane-row {
+    transition: all 250ms ease-in-out;
+}
+
+.pane-row:selected {
+    background-color: #333333
+}
+
+.pane-row:selected image {
+    animation: fancy-turn 1s ease-in-out;
+}
+
+.rom-icon {
+    background-color: #ffffff;
+    color: #000000;
+    border-radius: 3px;
+    padding: 2px;
+}
+
+.font-weight-700 {
+    font-weight: 700;
+}
+
+.font-weight-600 {
+    font-weight: 600;
+}
+
+.no-padding-left-right {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.headerbar-button {
+    background-color: #4d4d4d;
+}
