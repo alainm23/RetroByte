@@ -24,6 +24,7 @@ public class Services.Database : GLib.Object {
     private string db_path;
 
     public signal void game_added (Objects.Game game);
+    public signal void snapshot_added (Objects.Snapshot snapshot);
 
     public Database () {
         int rc = 0;
@@ -59,11 +60,26 @@ public class Services.Database : GLib.Object {
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
                 name            TEXT,
                 uri             TEXT,
-                platform          TEXT,
+                platform        TEXT,
                 date_added      TEXT,
                 last_played     TEXT,
                 is_favorite     INTEGER,
+                developer       TEXT,
+                genre           TEXT,
                 CONSTRAINT unique_game UNIQUE (uri)
+            );
+        """;
+
+        rc = db.exec (sql, null, null);
+        debug ("Table Games created");
+
+        sql = """
+            CREATE TABLE IF NOT EXISTS Snapshots (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                game_id        INTEGER,
+                is_automatic   INTEGER,
+                date_added     TEXT,
+                FOREIGN KEY (game_id) REFERENCES Games (id) ON DELETE CASCADE
             );
         """;
 
@@ -157,6 +173,112 @@ public class Services.Database : GLib.Object {
             g.is_favorite = stmt.column_int (6);
 
             all.add (g);
+        }
+
+        return all;
+    }
+
+    public int insert_snapshot (Objects.Snapshot snapshot) {
+        Sqlite.Statement stmt;
+        string sql;
+        int res;
+
+        sql = """
+            INSERT OR IGNORE INTO Snapshots (game_id, date_added, is_automatic)
+            VALUES (?, ?, ?);
+        """;
+
+        res = db.prepare_v2 (sql, -1, out stmt);
+        assert (res == Sqlite.OK);
+
+        res = stmt.bind_int (1, snapshot.game_id);
+        assert (res == Sqlite.OK);
+
+        res = stmt.bind_text (2, snapshot.date_added);
+        assert (res == Sqlite.OK);
+
+        res = stmt.bind_int (3, snapshot.is_automatic);
+        assert (res == Sqlite.OK);
+
+        if (stmt.step () != Sqlite.DONE) {
+            warning ("Error: %d: %s", db.errcode (), db.errmsg ());
+        }
+
+        stmt.reset ();
+
+        sql = """
+            SELECT id FROM Snapshots WHERE date_added = ?;
+        """;
+
+        res = db.prepare_v2 (sql, -1, out stmt);
+        assert (res == Sqlite.OK);
+
+        res = stmt.bind_text (1, snapshot.date_added);
+        assert (res == Sqlite.OK);
+
+        if (stmt.step () == Sqlite.ROW) {
+            snapshot.id = stmt.column_int (0);
+            snapshot_added (snapshot);
+        } else {
+            warning ("Error: %d: %s", db.errcode (), db.errmsg ());
+        }
+
+        return snapshot.id;
+    }
+
+    public Objects.Snapshot? get_last_snapshot (int game_id) {
+        Objects.Snapshot? returned = null;
+        Sqlite.Statement stmt;
+        string sql;
+        int res;
+
+        sql = """
+            SELECT * FROM Snapshots WHERE game_id = ? ORDER BY date_added DESC LIMIT 1;
+        """;
+
+        res = db.prepare_v2 (sql, -1, out stmt);
+        assert (res == Sqlite.OK);
+
+        res = stmt.bind_int (1, game_id);
+        assert (res == Sqlite.OK);
+
+        while (stmt.step () == Sqlite.ROW) {
+            returned = new Objects.Snapshot ();
+            returned.id = stmt.column_int (0);
+            returned.game_id = stmt.column_int (1);
+            returned.is_automatic = stmt.column_int (2);
+            returned.date_added = stmt.column_text (3);
+        }
+
+        stmt.reset ();
+        return returned;
+    }
+
+    public Gee.ArrayList<Objects.Snapshot?> get_snapshots_by_game (int game_id) {
+        Sqlite.Statement stmt;
+        string sql;
+        int res;
+
+        sql = """
+            SELECT * FROM Snapshots WHERE game_id = ? ORDER BY date_added DESC LIMIT 5;
+        """;
+
+        res = db.prepare_v2 (sql, -1, out stmt);
+        assert (res == Sqlite.OK);
+
+        res = stmt.bind_int (1, game_id);
+        assert (res == Sqlite.OK);
+
+        var all = new Gee.ArrayList<Objects.Snapshot?> ();
+
+        while ((res = stmt.step ()) == Sqlite.ROW) {
+            var returned = new Objects.Snapshot ();
+            returned.id = stmt.column_int (0);
+            returned.game_id = stmt.column_int (1);
+            returned.is_automatic = stmt.column_int (2);
+            returned.date_added = stmt.column_text (3);
+
+            all.add (returned);
         }
 
         return all;

@@ -36,7 +36,9 @@ public class RetroByte : Gtk.Application {
         // Dir to Database
         utils = new Utils ();
         utils.create_dir_with_parents ("/com.github.alainm23.retro-byte");
-
+        utils.create_dir_with_parents ("/com.github.alainm23.retro-byte/snapshots");
+        utils.create_dir_with_parents ("/com.github.alainm23.retro-byte/cores");
+        
         // Services
         settings = new Settings ("com.github.alainm23.retro-byte");
         database = new Services.Database ();

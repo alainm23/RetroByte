@@ -22,9 +22,17 @@
 */
 
 public class Utils : GLib.Object {
+    public string APP_FOLDER; // vala-lint=naming-convention
+    public string SNAPSHOTS_FOLDER; // vala-lint=naming-convention
+    public string CORES_FOLDER;
+
     private Gee.HashMap<string, string> systems;
 
     construct {
+        APP_FOLDER = GLib.Path.build_filename (Environment.get_user_data_dir (), "com.github.alainm23.retro-byte");
+        SNAPSHOTS_FOLDER = GLib.Path.build_filename (APP_FOLDER, "snapshots");
+        CORES_FOLDER = GLib.Path.build_filename (APP_FOLDER, "cores");
+
         systems = new Gee.HashMap<string, string> ();
         systems.set ("application/vnd.nintendo.snes.rom", "bsnes_mercury_balanced.libretro");
         systems.set ("application/x-gba-rom", "mgba.libretro");

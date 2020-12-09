@@ -31,7 +31,7 @@ executable(
     'src/Services/RetroCoreManager.vala',
     'src/Services/SnapshotManager.vala',
 
-    'src/Widgets/HeaderBar.vala',
+    'src/Widgets/ActionBar.vala',
     'src/Widgets/Pane.vala',
     'src/Widgets/ActionRow.vala',
     'src/Widgets/ConsoleRow.vala',

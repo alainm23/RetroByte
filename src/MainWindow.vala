@@ -47,7 +47,6 @@ public class MainWindow : Hdy.ApplicationWindow {
         sidebar_header.has_subtitle = false;
         sidebar_header.show_close_button = true;
         sidebar_header.get_style_context ().add_class ("sidebar-header");
-        sidebar_header.get_style_context ().add_class ("default-decoration");
         sidebar_header.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
 
         var pane = new Widgets.Pane ();
@@ -60,9 +59,18 @@ public class MainWindow : Hdy.ApplicationWindow {
         view_header.has_subtitle = false;
         view_header.decoration_layout = ":maximize";
         view_header.show_close_button = true;
-        view_header.get_style_context ().add_class ("default-decoration");
-        view_header.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
-        
+
+        var modeview_button = new Granite.Widgets.ModeButton ();
+        modeview_button.valign = Gtk.Align.CENTER;
+        modeview_button.append_icon ("view-grid-symbolic", Gtk.IconSize.MENU);
+        modeview_button.append_icon ("view-list-symbolic", Gtk.IconSize.MENU);
+
+        var search_entry = new Gtk.SearchEntry ();
+        search_entry.valign = Gtk.Align.CENTER;
+
+        view_header.pack_start (modeview_button);
+        view_header.pack_end (search_entry);
+
         var library_stack = new Gtk.Stack ();
         library_stack.transition_type = Gtk.StackTransitionType.NONE;
         library_stack.expand = true;

@@ -20,7 +20,9 @@ public class Services.RetroCoreManager : GLib.Object {
 					continue;
 
 				core_descriptors += core_descriptor;
-                core_descriptor_ids[core_descriptor.get_id ()] = core_descriptor;
+				core_descriptor_ids [core_descriptor.get_id ()] = core_descriptor;
+				
+				RetroByte.utils.create_dir_with_parents ("/com.github.alainm23.retro-byte/cores/" + core_descriptor.get_id ());
 			}
 			catch (Error e) {
 				debug (e.message);
