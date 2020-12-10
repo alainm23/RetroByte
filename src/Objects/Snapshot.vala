@@ -3,14 +3,17 @@ public class Objects.Snapshot : GLib.Object {
 	public int game_id { get; set; default = 0; }
 	public int is_automatic { get; set; default = 0; }
 	public string date_added { get; set; default = new GLib.DateTime.now_local ().to_string (); }
-	public string path { get; set; }
 
-	construct {
-		update_path ();
-	}
+	private string _path;
+	public string path {
+		get {
+			_path = "%s/%i/%i".printf (RetroByte.utils.SNAPSHOTS_FOLDER, game_id, id);
+			return _path;
+		}
 
-	public void update_path () {
-		path = "%s/%s/%s".printf (RetroByte.utils.SNAPSHOTS_FOLDER, game_id.to_string (), id.to_string ());
+		set {
+			_path = value;
+		}
 	}
 
 	public void save_state (Retro.Core core, Retro.CoreView core_view) {
@@ -48,6 +51,6 @@ public class Objects.Snapshot : GLib.Object {
 		var save_dir_file = File.new_for_path (get_save_directory_path ());
 		var dest_file = File.new_for_path (dest);
 
-		// FileOperations.copy_contents (save_dir_file, dest_file);
+		RetroByte.utils.copy_contents (save_dir_file, dest_file);
 	}
 }

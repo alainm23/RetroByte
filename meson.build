@@ -29,13 +29,13 @@ executable(
 
     'src/Services/Database.vala',
     'src/Services/RetroCoreManager.vala',
-    'src/Services/SnapshotManager.vala',
 
     'src/Widgets/ActionBar.vala',
     'src/Widgets/Pane.vala',
     'src/Widgets/ActionRow.vala',
     'src/Widgets/ConsoleRow.vala',
     'src/Widgets/GameChild.vala',
+    'src/Widgets/ResumeGame.vala',
 
     'src/Views/CoreView.vala',
     'src/Views/Platform.vala',

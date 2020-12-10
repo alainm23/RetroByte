@@ -105,12 +105,14 @@ public class MainWindow : Hdy.ApplicationWindow {
                 platform_view.game_selected.connect ((game) => {
                     if (core_view == null) {
                         core_view = new Views.CoreView (game);
+                        
                         main_stack.add_named (core_view, "core_view");
                         main_stack.visible_child_name = "core_view";
 
                         core_view.back.connect (() => {
                             if (core_view != null) {
                                 main_stack.visible_child_name = "library";
+                                
                                 GLib.Timeout.add (main_stack.transition_duration, () => {
                                     core_view.stop ();
                                     core_view.destroy ();

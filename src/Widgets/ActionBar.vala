@@ -26,12 +26,14 @@ public class Widgets.ActionBar : Gtk.Grid {
     public Gtk.SearchEntry search_entry;
     private Gtk.Popover popover = null;
     private Gtk.ListBox listbox;
+    private Gtk.Revealer main_revealer;
+    private Gtk.Grid snapshots_box;
 
     public signal void back ();
     public signal void toggle_playing (string icon_name);
     public signal void search_changed (string text);
     public signal void save_button_clicked ();
-    public signal void open_last_scene_button_clicked ();
+    public signal void open_last_snapshot_button_clicked ();
     public signal void popover_opened (bool value);
     public signal void snapshot_selected (Objects.Snapshot snapshot);
     public signal void reset ();
@@ -42,6 +44,12 @@ public class Widgets.ActionBar : Gtk.Grid {
         }
     }
 
+    public bool reveal_child {
+        set {
+            main_revealer.reveal_child = value;
+        }
+    }
+
     public ActionBar (Objects.Game game) {
         Object (
             game: game
@@ -49,8 +57,8 @@ public class Widgets.ActionBar : Gtk.Grid {
     }
 
     construct {
-        margin = 12;
-        get_style_context ().add_class ("app-notification");
+        valign = Gtk.Align.END;
+        halign = Gtk.Align.CENTER;
 
         var back_icon = new Gtk.Image ();
         back_icon.gicon = new ThemedIcon ("system-shutdown-symbolic");
@@ -75,18 +83,6 @@ public class Widgets.ActionBar : Gtk.Grid {
         play_button.get_style_context ().add_class ("actionbar-button");
         play_button.add (icon_play_puse);
 
-        play_button.clicked.connect (() => {
-            if (icon_play_puse.icon_name == "media-playback-start-symbolic") {
-                icon_play_puse.icon_name = "media-playback-pause-symbolic";
-                play_button.tooltip_text = _ ("Pause");
-            } else {
-                icon_play_puse.icon_name = "media-playback-start-symbolic";
-                play_button.tooltip_text = _ ("Play");
-            }
-
-            toggle_playing (icon_play_puse.icon_name);
-        });
-
         var reset_icon = new Gtk.Image ();
         reset_icon.gicon = new ThemedIcon ("system-reboot-symbolic");
         reset_icon.pixel_size = 16;
@@ -97,10 +93,6 @@ public class Widgets.ActionBar : Gtk.Grid {
         reset_button.tooltip_text = _ ("Reset");
         reset_button.get_style_context ().add_class ("actionbar-button");
         reset_button.add (reset_icon);
-
-        reset_button.clicked.connect (() => {
-            reset ();
-        });
 
         var play_reset_box = new Gtk.Grid ();
         play_reset_box.margin_start = 24;
@@ -121,68 +113,75 @@ public class Widgets.ActionBar : Gtk.Grid {
         save_button.get_style_context ().add_class ("actionbar-button");
         save_button.add (save_icon);
 
-        var open_last_scene_icon = new Gtk.Image ();
-        open_last_scene_icon.gicon = new ThemedIcon ("document-open-recent-symbolic");
-        open_last_scene_icon.pixel_size = 16;
+        var open_last_snapshot_icon = new Gtk.Image ();
+        open_last_snapshot_icon.gicon = new ThemedIcon ("document-open-recent-symbolic");
+        open_last_snapshot_icon.pixel_size = 16;
 
-        var open_last_scene_button = new Gtk.Button ();
-        open_last_scene_button.can_focus = false;
-        open_last_scene_button.valign = Gtk.Align.CENTER;
-        open_last_scene_button.tooltip_text = _ ("Open Last Snapshot");
-        open_last_scene_button.get_style_context ().add_class ("actionbar-button");
-        open_last_scene_button.add (open_last_scene_icon);
+        var open_last_snapshot_button = new Gtk.Button ();
+        open_last_snapshot_button.can_focus = false;
+        open_last_snapshot_button.valign = Gtk.Align.CENTER;
+        open_last_snapshot_button.tooltip_text = _ ("Open Last Snapshot");
+        open_last_snapshot_button.get_style_context ().add_class ("actionbar-button");
+        open_last_snapshot_button.add (open_last_snapshot_icon);
 
-        var open_scenes_icon = new Gtk.Image ();
-        open_scenes_icon.gicon = new ThemedIcon ("pan-down-symbolic");
-        open_scenes_icon.pixel_size = 16;
+        var open_snapshots_icon = new Gtk.Image ();
+        open_snapshots_icon.gicon = new ThemedIcon ("pan-down-symbolic");
+        open_snapshots_icon.pixel_size = 16;
 
-        var open_scenes_button = new Gtk.Button ();
-        open_scenes_button.can_focus = false;
-        open_scenes_button.valign = Gtk.Align.CENTER;
-        open_scenes_button.tooltip_text = _ ("Open Snapshots");
-        open_scenes_button.get_style_context ().add_class ("actionbar-button");
-        open_scenes_button.get_style_context ().add_class ("no-padding-left-right");
-        open_scenes_button.add (open_scenes_icon);
+        var open_snapshots_button = new Gtk.Button ();
+        open_snapshots_button.can_focus = false;
+        open_snapshots_button.valign = Gtk.Align.CENTER;
+        open_snapshots_button.tooltip_text = _ ("Open Snapshots");
+        open_snapshots_button.get_style_context ().add_class ("actionbar-button");
+        open_snapshots_button.get_style_context ().add_class ("no-padding-left-right");
+        open_snapshots_button.add (open_snapshots_icon);
 
-        var open_box = new Gtk.Grid ();
-        open_box.margin_start = 6;
-        open_box.valign = Gtk.Align.CENTER;
-        open_box.get_style_context ().add_class (Gtk.STYLE_CLASS_LINKED);
-        open_box.add (open_last_scene_button);
-        open_box.add (open_scenes_button);
+        snapshots_box = new Gtk.Grid ();
+        snapshots_box.margin_start = 6;
+        snapshots_box.valign = Gtk.Align.CENTER;
+        snapshots_box.get_style_context ().add_class (Gtk.STYLE_CLASS_LINKED);
+        snapshots_box.add (open_last_snapshot_button);
+        snapshots_box.add (open_snapshots_button);
+
+        var fast_forward_icon = new Gtk.Image ();
+        fast_forward_icon.gicon = new ThemedIcon ("preferences-system-power-symbolic");
+        fast_forward_icon.pixel_size = 16; 
+
+        var fast_forward_button = new Gtk.ToggleButton ();
+        fast_forward_button.can_focus = false;
+        fast_forward_button.valign = Gtk.Align.CENTER;
+        fast_forward_button.tooltip_text = _ ("Fast Forward");
+        fast_forward_button.get_style_context ().add_class ("actionbar-button");
+        fast_forward_button.add (fast_forward_icon);
 
         var fullscreen_button = new Gtk.Button ();
+        fullscreen_button.margin_start = 24;
         fullscreen_button.can_focus = false;
         fullscreen_button.valign = Gtk.Align.CENTER;
         fullscreen_button.tooltip_text = _ ("Play");
         fullscreen_button.get_style_context ().add_class ("actionbar-button");
         fullscreen_button.add (new Gtk.Image.from_icon_name ("view-fullscreen-symbolic", Gtk.IconSize.MENU));
 
-        var extern_button = new Gtk.Button ();
-        extern_button.can_focus = false;
-        extern_button.valign = Gtk.Align.CENTER;
-        extern_button.tooltip_text = _ ("Play");
-        extern_button.get_style_context ().add_class ("actionbar-button");
-        extern_button.add (new Gtk.Image.from_icon_name ("window-new-symbolic", Gtk.IconSize.MENU));
+        var main_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
+        main_box.margin = 24;
+        main_box.get_style_context ().add_class ("notification");
+        main_box.hexpand = true;
+        main_box.pack_start (back_button, false, false, 0);
+        main_box.pack_start (play_reset_box, false, false, 0);
+        main_box.pack_start (save_button, false, false, 0);
+        main_box.pack_start (snapshots_box, false, false, 0);
+        // main_box.pack_start (fast_forward_button, false, false, 0);
+        main_box.pack_start (fullscreen_button, false, false, 0);
 
-        var extern_box = new Gtk.Grid ();
-        extern_box.margin_start = 12;
-        extern_box.valign = Gtk.Align.CENTER;
-        extern_box.get_style_context ().add_class (Gtk.STYLE_CLASS_LINKED);
-        extern_box.add (fullscreen_button);
-        extern_box.add (extern_button);
-
-        var controller_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
-        controller_box.hexpand = true;
-        controller_box.pack_start (back_button, false, false, 0);
-        controller_box.pack_start (play_reset_box, false, false, 0);
-        controller_box.pack_start (save_button, false, false, 0);
-        controller_box.pack_start (open_box, false, false, 0);
-
-        search_entry = new Gtk.SearchEntry ();
-        search_entry.valign = Gtk.Align.CENTER;
+        main_revealer = new Gtk.Revealer ();
+        main_revealer.transition_type = Gtk.RevealerTransitionType.SLIDE_UP;
+        main_revealer.reveal_child = false;
+        main_revealer.add (main_box);
         
-        add (controller_box);
+        add (main_revealer);
+        if (RetroByte.database.get_last_snapshot (game.id) == null) {
+            snapshots_box.sensitive = false;
+        }
 
         back_button.clicked.connect (() => {
             back ();
@@ -196,13 +195,13 @@ public class Widgets.ActionBar : Gtk.Grid {
             save_button_clicked ();
         });
 
-        open_last_scene_button.clicked.connect (() => {
-            open_last_scene_button_clicked ();
+        open_last_snapshot_button.clicked.connect (() => {
+            open_last_snapshot_button_clicked ();
         });
 
-        open_scenes_button.clicked.connect (() => {
+        open_snapshots_button.clicked.connect (() => {
             if (popover == null) {
-                popover = new Gtk.Popover (open_scenes_button);
+                popover = new Gtk.Popover (open_snapshots_button);
                 listbox = new Gtk.ListBox ();
                 listbox.margin_top = 6;
                 listbox.margin_bottom = 6;
@@ -228,8 +227,6 @@ public class Widgets.ActionBar : Gtk.Grid {
 
             int index = 1;
             foreach (var snapshot in RetroByte.database.get_snapshots_by_game (game.id)) {
-                snapshot.update_path ();
-
                 var row = new Widgets.SnapshotRow (snapshot, index);
                 listbox.add (row);
                 index++;
@@ -237,6 +234,28 @@ public class Widgets.ActionBar : Gtk.Grid {
 
             listbox.show_all ();
             popover.show_all ();
+        });
+
+        play_button.clicked.connect (() => {
+            if (icon_play_puse.icon_name == "media-playback-start-symbolic") {
+                icon_play_puse.icon_name = "media-playback-pause-symbolic";
+                play_button.tooltip_text = _ ("Pause");
+            } else {
+                icon_play_puse.icon_name = "media-playback-start-symbolic";
+                play_button.tooltip_text = _ ("Play");
+            }
+
+            toggle_playing (icon_play_puse.icon_name);
+        });
+        
+        reset_button.clicked.connect (() => {
+            reset ();
+        });
+
+        RetroByte.database.snapshot_added.connect ((snapshot) => {
+            if (game.id == snapshot.game_id) {
+                snapshots_box.sensitive = true;
+            }
         });
     }
 }

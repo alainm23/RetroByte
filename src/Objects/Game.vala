@@ -27,4 +27,42 @@ public class Objects.Game : GLib.Object {
     public string uri { get; set; default = ""; }
     public string date_added { get; set; default = new GLib.DateTime.now_local ().to_string (); }
     public string last_played { get; set; default = ""; }
+
+    private string _path;
+	public string path {
+		get {
+			_path = "%s/%i".printf (RetroByte.utils.SNAPSHOTS_FOLDER, id);
+			return _path;
+		}
+
+		set {
+			_path = value;
+		}
+	}
+
+    public string get_snapshot_path () {
+		return Path.build_filename (path, "snapshot");
+	}
+
+	public string get_screenshot_path () {
+		return Path.build_filename (path, "screenshot");
+    }
+    
+    public string get_save_ram_path () {
+		return Path.build_filename (path, "save");
+    }
+
+    public void save_memory (Retro.Core core, Retro.CoreView core_view) {
+        RetroByte.utils.create_dir_with_parents ("/com.github.alainm23.retro-byte/snapshots/" + id.to_string ());
+
+        core.save_state (Path.build_filename (path, "snapshot"));
+
+		core_view.get_pixbuf ().save (
+			Path.build_filename (path, "screenshot"), "jpeg", "quality", "100"
+        );
+        
+        if (core.get_memory_size (Retro.MemoryType.SAVE_RAM) > 0) {
+            core.save_memory (Retro.MemoryType.SAVE_RAM, get_save_ram_path ());
+        }
+    }
 }

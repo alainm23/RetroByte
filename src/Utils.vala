@@ -52,17 +52,50 @@ public class Utils : GLib.Object {
     }
     
     public static string get_config_dir () {
-		var config_dir = Environment.get_user_config_dir ();
-		return @"$config_dir/games";
+      var config_dir = Environment.get_user_config_dir ();
+      return @"$config_dir/games";
     }
     
     public string get_platforms_dir () {
-		var config_dir = get_config_dir ();
-		return @"$config_dir/platforms";
+      var config_dir = get_config_dir ();
+      return @"$config_dir/platforms";
     }
 
     public static string get_data_dir () {
-		var data_dir = Environment.get_user_data_dir ();
-		return @"$data_dir/games";
-	}
+      var data_dir = Environment.get_user_data_dir ();
+      return @"$data_dir/games";
+    }
+
+    public static void copy_contents (File src, File dest) throws Error {
+      copy_recursively (src, dest, true);
+    }
+
+    private static void copy_recursively (File src, File dest, bool merge_flag) throws Error {
+        var src_type = src.query_file_type (FileQueryInfoFlags.NONE);
+    
+        if (src_type == FileType.DIRECTORY) {
+          if (!dest.query_exists () || !merge_flag) {
+            dest.make_directory ();
+            src.copy_attributes (dest, FileCopyFlags.NONE);
+          }
+    
+          var src_path = src.get_path ();
+          var dest_path = dest.get_path ();
+          var enumerator = src.enumerate_children (FileAttribute.STANDARD_NAME, FileQueryInfoFlags.NONE);
+    
+          for (var info = enumerator.next_file (); info != null; info = enumerator.next_file ()) {
+            // src_object is any file found in the src directory (could be
+            // a file or another directory)
+            var info_name = info.get_name ();
+            var src_object_path = Path.build_filename (src_path, info_name);
+            var src_object = File.new_for_path (src_object_path);
+            var dest_object_path = Path.build_filename (dest_path, info_name);
+            var dest_object = File.new_for_path (dest_object_path);
+    
+            copy_recursively (src_object, dest_object, merge_flag);
+          }
+        } else if (src_type == FileType.REGULAR) {
+          src.copy (dest, FileCopyFlags.NONE);
+        }
+    }
 }
